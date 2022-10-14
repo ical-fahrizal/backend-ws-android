@@ -1,0 +1,61 @@
+{
+    server: {
+        id: KafkaMasterDc
+        port: 8088
+        appName: api-gateway-dc
+        #tokenExpiration: 1
+        tokenExpiration: 100
+        debugMode: false
+    }
+
+    database: {
+        storage: sql
+        sql: {
+            driver: mysql
+            #production
+            connection: "root:admin12345@tcp(127.0.0.1:3306)/user_dc"
+            #connection: "root:admin12345@tcp(127.0.0.1:3306)/test_dc"
+            
+            maxIdle: 10         #Max jumlah koneksi idle
+            maxOpen: 25         #Max jumlah koneksi open
+            maxLifetime: 300    #Maximum lifetime (dalam detik)
+        }
+    }
+
+    apiCors: {
+        allowedHeaders: ["X-Requested-With", "Content-Type", "Authorization"]
+        allowedOrigins: ["*"]
+        allowedMethods: ["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"]
+    }
+
+    timeoutHandler: {
+        writeTimeout: 60
+        readTimeout: 60
+        idleTimeout: 60
+        gracefullTimeout: 15
+        netTransportDialTimeout: 60
+        netTransportTLSHandshakeTimeout: 60
+        netClientTimeout: 60
+        reqTimeout: 60
+    }
+
+    messagebroker: {
+        brokerServer: localhost:9092
+        topicRequest: tpc-req-master
+        topicRespon: tpc-resp-master
+        brokerGroup: grp-master
+        groupConsumen: grp-resp-master
+    }
+
+    firebase: {
+        apiURL: "https://fcm.googleapis.com"
+        serverKey: "AAAAsOKwNqY:APA91bEyD3Dgere0z7wf7RONGxqh1ybFy2xyua556NzqQAcK5zMYp5E-qZ2oozw0vTUUh6T7FDXnEGvQiDHG48BaVrPcVV1oDiIQUqZQ6CRrxOgdQED6e-8nrs7cZ5ZISP0JbKyQnvbl"
+        topic: "/topics/bidding_new_task"
+    }
+
+    apiService : {
+        company : {
+            url: "http://localhost:8089/company/new"
+        }
+    }
+}
