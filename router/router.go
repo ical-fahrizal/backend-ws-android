@@ -27,11 +27,12 @@ var clients map[string]UserData
 const MySecret string = "abc&1*~#^2^#s0^=)^^7%b34"
 
 type MessageKafka struct {
-	Topic string      `json:"topic"`
-	Proc  string      `json:"proc"`
-	Data  interface{} `json:"data"`
-	From  string      `json:"-"`
-	Exp   int64       `json:"exp"`
+	Topic    string      `json:"topic"`
+	Proc     string      `json:"proc"`
+	Data     interface{} `json:"data"`
+	From     string      `json:"from"`
+	Exp      int64       `json:"exp"`
+	isMember bool        `json:"member"`
 }
 
 type MessageWebsocket struct {
@@ -80,7 +81,7 @@ func SetupRoutes() {
 
 	}))
 
-	go kafkaConsumer()
+	go consumerUser()
 
 	log.Fatal(app.Listen(":3002"))
 
@@ -159,6 +160,7 @@ func setupSocketListeners() {
 					return
 				}
 			} else {
+
 				if ep.Kws.GetStringAttribute("isLoggedIn") == "true" {
 					req.Exp = time.Now().Add(20 * time.Minute).Unix()
 					req.From = ep.Kws.UUID
@@ -172,7 +174,16 @@ func setupSocketListeners() {
 
 					ep.Kws.Emit(msge)
 
+					if ep.Kws.GetStringAttribute("isMember") == "true" {
+						req.isMember = true
+					} else {
+						req.isMember = false
+					}
+
+					log.Printf("req : %v", req)
+
 					kafkaProducer(req)
+
 				} else {
 					// ep.Kws.Emit([]byte("disconnected"))
 					m := MessageWebsocket{3, req.Topic, req.Proc, "Please Login"}
@@ -337,7 +348,8 @@ func checkDevice(str interface{}, ep *ikisocket.EventPayload) bool {
 				ep.Kws.SetAttribute("phoneOsVersion", m.PhoneOsVersion)
 				ep.Kws.SetAttribute("keyTime", int(m.Time))
 				ep.Kws.SetAttribute("token", encText)
-				ep.Kws.SetAttribute("isLoggedIn", "false")
+				ep.Kws.SetAttribute("isLoggedIn", "true")
+				ep.Kws.SetAttribute("isMember", "false")
 
 				log.Printf("clients : %v", clients)
 				m := MessageWebsocket{4, "", "", "OK"}
@@ -425,7 +437,7 @@ func kafkaProducer(mg MessageKafka) {
 	p.Flush(1 * 1000)
 }
 
-func kafkaConsumer() {
+func consumerUser() {
 	c, err := kafka.NewConsumer(&kafka.ConfigMap{
 		"bootstrap.servers": conf.GetBroker(),
 		"group.id":          conf.GetGroup(),
@@ -437,7 +449,7 @@ func kafkaConsumer() {
 	}
 
 	run := true
-	topics := []string{conf.GetTopicRequest()}
+	topics := []string{"user-respon"}
 	err = c.SubscribeTopics(topics, nil)
 
 	for run {

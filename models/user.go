@@ -19,31 +19,26 @@ import (
 // }
 
 type User struct {
-	// Id               uint   `json:"id"`
-	// Status           bool   `json:"status"`
-	Locked           bool   `json:"locked" default:"false"`
-	FailedLoginCount int    `json:"failedLoginCount" default:"0"`
+	Id               string `json:"id" default:"0"`
+	Status           string `json:"status" default:"1"`
+	Locked           string `json:"locked" default:"0"`
+	FailedLoginCount string `json:"failedLoginCount" default:"0"`
 	Fullname         string `json:"fullname"`
 	Email            string `json:"email"`
 	Hp               string `json:"hp"`
 	Username         string `json:"username"`
 	Password         string `json:"password"`
-	// FcmToken         string `json:"fcmToken"`
-	// ApiKey           string `json:"apiKey"`
-	// CompanyId        int    `json:"companyId"`
-	// ParentUserId     int    `json:"parentUserId"`
-	// RootId           int    `json:"rootId"`
-	// OfficeId         int    `json:"officeId"`
-	// DepartementId    int    `json:"departementId"`
-	// LastLoginTime    string `json:"lastLoginTime"`
-	// Token            string `json:"token"`
+	CompanyId        string `json:"companyId" default:"0"`
+	RoleId           string `json:"roleId" default:"0"`
+	OfficeId         string `json:"officeId" default:"0"`
+	DepartementId    string `json:"departementId" default:"0"`
 	// Total            uint   `json:"-"`
 	// MsgError         string `json:"-"`
 }
 
 func GetUser(username string) (*User, error) {
 	user := &User{}
-	keyRedis := "user:" + username
+	keyRedis := "user:profile:" + username
 	log.Printf("keyRedis : %v", keyRedis)
 	userRedis, err := redis.Bytes(conf.GetReJson().JSONGet(keyRedis, "."))
 	if err != nil {
@@ -63,7 +58,7 @@ func GetUser(username string) (*User, error) {
 // CreateUser new user
 func CreateUser(user *User) (*User, error) {
 	userData := &User{}
-	keyRedis := "user:" + user.Username
+	keyRedis := "user:profile:" + user.Username
 	res, err := conf.GetReJson().JSONSet(keyRedis, ".", user)
 	if err != nil {
 		log.Fatalf("Failed to JSONSet")
