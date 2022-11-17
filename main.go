@@ -83,3 +83,5 @@ func kafkaCustomer2() {
 	c.Close()
 	os.Exit(3)
 }
+
+//test
